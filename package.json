@@ -1,0 +1,10 @@
+{
+  "name": "apps.interface",
+  "version": "0.1.0",
+  "description": "Shared app interface schema and template for Tesseracs background apps.",
+  "type": "module",
+  "files": [
+    "schemas",
+    "templates"
+  ]
+}

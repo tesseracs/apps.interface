@@ -1,0 +1,35 @@
+{
+  "kind": "background_app",
+  "app_id": "sample-app",
+  "version": "0.1.0",
+  "display_name": "Sample App",
+  "description": "Template for background app interface contracts.",
+  "runtime": {
+    "kind": "python",
+    "language": "python",
+    "entrypoint": "python -m app.main",
+    "min_host_version": "1.1.0"
+  },
+  "entrypoints": {
+    "start": "python -m app.main",
+    "stop": "SIGTERM",
+    "webhook_base_path": "/api/apps/sample-app"
+  },
+  "healthcheck": {
+    "type": "http",
+    "path": "/api/health",
+    "interval_seconds": 10,
+    "timeout_seconds": 5
+  },
+  "lifecycle": {
+    "install": "python -m app.scripts.install",
+    "migrate": "python -m app.scripts.migrate",
+    "uninstall": "python -m app.scripts.uninstall"
+  },
+  "capabilities": [
+    "background-runtime"
+  ],
+  "permissions": [
+    "sessions:read"
+  ]
+}

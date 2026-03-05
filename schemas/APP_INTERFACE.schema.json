@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tesseracs.dev/schemas/app-interface.schema.json",
+  "title": "Tesseracs Background App Interface",
+  "description": "Contract for publishable background apps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "app_id",
+    "version",
+    "display_name",
+    "runtime",
+    "entrypoints",
+    "healthcheck",
+    "lifecycle",
+    "capabilities",
+    "permissions"
+  ],
+  "properties": {
+    "kind": {
+      "const": "background_app"
+    },
+    "app_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "entrypoint", "min_host_version"],
+      "properties": {
+        "kind": {
+          "enum": ["python", "node", "native", "wasm", "container", "remote"]
+        },
+        "language": {
+          "type": "string",
+          "description": "Informational language label; execution is governed by runtime.kind."
+        },
+        "entrypoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "image": { "type": "string" },
+            "digest": { "type": "string" },
+            "path": { "type": "string" },
+            "module": { "type": "string" },
+            "remote_endpoint_id": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory_mb": { "type": "integer", "minimum": 64 },
+            "timeout_seconds": { "type": "integer", "minimum": 1, "maximum": 86400 }
+          }
+        },
+        "min_host_version": { "type": "string" }
+      }
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start"],
+      "properties": {
+        "start": { "type": "string", "minLength": 1 },
+        "stop": { "type": "string" },
+        "webhook_base_path": { "type": "string" }
+      }
+    },
+    "healthcheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "interval_seconds", "timeout_seconds"],
+      "properties": {
+        "type": { "enum": ["http", "command"] },
+        "path": { "type": "string" },
+        "command": { "type": "string" },
+        "interval_seconds": { "type": "integer", "minimum": 2, "maximum": 300 },
+        "timeout_seconds": { "type": "integer", "minimum": 1, "maximum": 60 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "http" } } },
+          "then": { "required": ["path"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "command" } } },
+          "then": { "required": ["command"] }
+        }
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["install", "migrate", "uninstall"],
+      "properties": {
+        "install": { "type": "string" },
+        "migrate": { "type": "string" },
+        "uninstall": { "type": "string" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "required_env": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]{1,127}$"
+      },
+      "uniqueItems": true
+    },
+    "billing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "publishable"],
+      "properties": {
+        "tier": { "enum": ["free", "pro", "org", "enterprise"] },
+        "publishable": { "type": "boolean" }
+      }
+    },
+    "interfaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module_ids": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "tool_ids": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    }
+  }
+}
